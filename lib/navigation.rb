@@ -43,11 +43,20 @@ module RPH
       def navigation(sections, options={})
         navigation, items = Navigator.new(sections, options), []
 
+        counter = 1
         navigation.sections.each do |link|
-          if (link == controller.class.current_tab || 
-              #or, strip leading / from request.path and see if we have a match with link
+          css = ''
+
+          #add 'first' class if we're on the first section
+          css = css + ' first' if counter == 1
+
+          #add 'last' class if we're on the last section
+          css = css + ' last' if counter == navigation.sections.length
+
+          if (link == controller.class.current_tab ||
+              #strip leading / from request.path and see if we have a match with link
               link == request.path.slice(1, request.path.length).to_sym)          
-            css = 'current' 
+            css = css + ' current' 
           end            
           
           if navigation.methods_to_authorize.include?(link)
@@ -55,6 +64,8 @@ module RPH
           else
             items << content_tag(:li, construct(navigation, link), :class => css.to_s)
           end
+
+          counter = counter + 1
         end
         
         return '' if items.blank?
